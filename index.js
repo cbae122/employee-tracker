@@ -31,6 +31,7 @@ app.use(express.json());
 // Connect to database
 const dbConnect = mysql.createConnection(
   {
+    // on mac - localhost does not connect
     host: '127.0.0.1',
     // MySQL username,
     user: 'root',
@@ -43,8 +44,19 @@ const dbConnect = mysql.createConnection(
 
 dbConnect.connect((err) => {
     if (err) throw err;
-    startDb()
+    beforeDb()
 });
+
+beforeDb = () => {
+    console.log(',------------------------------------------------------------,')
+    console.log('|                                                            |')
+    console.log('|                                                            |')
+    console.log('|                      EMPLOYEE MANAGER                      |')
+    console.log('|                                                            |')
+    console.log('|                                                            |')
+    console.log('`------------------------------------------------------------’')
+    startDb();
+};
 
 const startDb = () => {
     inquirer.prompt({
