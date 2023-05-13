@@ -16,3 +16,57 @@
 // WHEN I choose to update an employee role
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 
+const express = require('express');
+// Import and require mysql2
+const mysql = require('mysql2');
+const inquirer = require('inquirer');
+
+const PORT = process.env.PORT || 3001;
+const app = express();
+
+// Express middleware
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+// Connect to database
+const dbConnect = mysql.createConnection(
+  {
+    host: '127.0.0.1',
+    // MySQL username,
+    user: 'root',
+    // MySQL password
+    password: '',
+    database: 'employees'
+  },
+  console.log(`Connected to the employee database.`)
+);
+
+dbConnect.connect((err) => {
+    if (err) throw err;
+    startDb()
+});
+
+const startDb = () => {
+    inquirer.prompt({
+        type: 'list',
+        name: 'choices',
+        message: 'What would you like to do?',
+        choices: [
+            'View All Employees',
+            'View All Employees By Department',
+            'View All Employees By Manager',
+            'Add Employee',
+            'Remove Employee',
+            'Update Employee Role',
+            'Update Employee Manager',
+            'View All Roles',
+            'Add Role',
+            'Remove Role',
+            'View All Deparments',
+            'Add Deparment',
+            'Remove Deparment',
+            'View Total Utilized Budget By Department',
+            'Quit'
+        ]
+    })
+}
