@@ -66,33 +66,47 @@ const startDb = () => {
         name: 'choices',
         message: 'What would you like to do?',
         choices: [
+
+            'View All Departments',
+            'View All Roles',
             'View All Employees',
-            // 'View All Employees By Department',
-            // 'View All Employees By Manager',
-            // 'Add Employee',
-            // 'Remove Employee',
-            // 'Update Employee Role',
-            // 'Update Employee Manager',
-            // 'View All Roles',
-            // 'Add Role',
-            // 'Remove Role',
-            // 'View All Deparments',
-            // 'Add Deparment',
-            // 'Remove Deparment',
-            // 'View Total Utilized Budget By Department',
+            'Add A Department',
+            'Add A Role',
+            'Add An Employee',
+            'Update An Employee Role',
             'Quit'
         ]
     })
     .then((answers) => {
         const { choices } = answers;
 
+        if (choices === 'View All Departments') {
+            renderAllDepartments();
+        }
+
+        if (choices === 'View All Roles') {
+            renderAllRoles();
+        }
+
         if (choices === 'View All Employees') {
             renderAllEmployees();
         }
 
-        // if (choices === 'View All Employees By Department') {
-        //     renderEmployeeDepartment();
-        // }
+        if (choices === 'Add A Department'){
+            addDepartment();
+        }
+
+        if (choices === 'Add A Role') {
+            addRole();
+        }
+
+        if (choices === 'Add An Employee') {
+            addEmployee();
+        }
+
+        if (choices === 'Update An Employee Role') {
+            updateRole();
+        }
 
         if (choices === 'Quit') {
             dbConnect.end()
