@@ -119,7 +119,7 @@ renderAllDepartments = () => {
         `SELECT department.id AS id,
                 department.name AS department FROM department`,
 
-                function (err, results, fields) {
+                function (err, results) {
                     if (err) {
                         console.log(err.message);
                         return;
@@ -131,7 +131,28 @@ renderAllDepartments = () => {
     );
 };
 
-const renderAllEmployees = () => {
+renderAllRoles = () => {
+    dbConnect.query (
+        `SELECT role.id,
+                role.title,
+                role.salary,
+                department.name AS department
+        FROM role
+                INNER JOIN department ON role.department_id = department.id `,
+
+                function (err, results) {
+                    if (err) {
+                        console.log(err.message);
+                        return;
+                    }
+
+                    console.table(results);
+                    startDb();
+                }
+    );
+};
+
+renderAllEmployees = () => {
     dbConnect.query (
         `SELECT employee.id, 
                 employee.first_name, 
@@ -145,7 +166,7 @@ const renderAllEmployees = () => {
                 LEFT JOIN department ON role.department_id = department.id
                 LEFT JOIN employee manager ON employee.manager_id = manager.id`,
 
-                function (err, results, fields) {
+                function (err, results) {
                     if (err) {
                         console.log(err.message);
                         return;
@@ -155,4 +176,31 @@ const renderAllEmployees = () => {
                     startDb();
                 }
     );
+};
+
+addDepartment = () => {
+    inquirer.prompt([{
+        type: 'text',
+        name: 'newDepartment',
+        message: 'Please enter the new departmant you would like to add: ',
+        validate: newDepartment => {
+            if (newDepartment) {
+                return true;
+            } else {
+                console.log('Please enter a new department');
+                return false;
+            }
+        }
+    }
+])
+
+    .then(data => {
+        const sql = `INSERT INTO department (name)
+                    VALUES (?)`;
+        dbConnect.query(sql, data.newDepartment, (err, results) => {
+            if (err) throw err;
+            console.log('Added ' +data.newDepartment + ' to department!');
+            renderAllDepartments();
+        });
+    });
 };
