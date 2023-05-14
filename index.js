@@ -114,6 +114,7 @@ const startDb = () => {
         });
 };
 
+// function to render all departments
 renderAllDepartments = () => {
     console.log('Showing all Departments.\n');
     const department = `SELECT department.id AS id, department.name AS department FROM department`;
@@ -125,6 +126,7 @@ renderAllDepartments = () => {
     });
 };
 
+// funcion to render all roles
 renderAllRoles = () => {
     console.log('Showing all Roles.\n');
 
@@ -141,6 +143,7 @@ renderAllRoles = () => {
     });
 };
 
+// function to render all employees
 renderAllEmployees = () => {
     console.log('Showing all Employees.\n');
     const employees = `SELECT employee.id, 
@@ -162,6 +165,7 @@ renderAllEmployees = () => {
     });
 };
 
+// function to add department
 addDepartment = () => {
     inquirer.prompt({
         type: 'text',
@@ -187,6 +191,8 @@ addDepartment = () => {
         });
 };
 
+
+// function to add role
 addRole = () => {
     inquirer.prompt([
         {
@@ -221,10 +227,10 @@ addRole = () => {
 
             const sqlId = `SELECT name, id FROM department`;
 
-            dbConnect.query(sqlId, (err, data) => {
+            dbConnect.query(sqlId, (err, results) => {
                 if (err) throw err;
 
-                const dept = data.map(({ name, id }) => ({ name: name, value: id }));
+                const dept = results.map(({ name, id }) => ({ name: name, value: id }));
 
                 inquirer.prompt([
                     {
@@ -252,6 +258,8 @@ addRole = () => {
         });
 };
 
+
+//function to add employee
 addEmployee = () => {
     inquirer.prompt([
         {
@@ -270,10 +278,10 @@ addEmployee = () => {
 
             const sqlRole = `SELECT role.id, role.title FROM role`;
 
-            dbConnect.query(sqlRole, (err, data) => {
+            dbConnect.query(sqlRole, (err, results) => {
                 if (err) throw err;
 
-                const role = data.map(({ id, title }) => ({ name: title, value: id }));
+                const role = results.map(({ id, title }) => ({ name: title, value: id }));
 
                 inquirer.prompt([
                     {
@@ -289,10 +297,10 @@ addEmployee = () => {
 
                         const managerSelect = `SELECT * FROM employee`;
 
-                        dbConnect.query(managerSelect, (err, data) => {
+                        dbConnect.query(managerSelect, (err, results) => {
                             if (err) throw err;
 
-                            const manager = data.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id}));
+                            const manager = results.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id}));
 
                             inquirer.prompt([
                                 {
@@ -320,4 +328,64 @@ addEmployee = () => {
                     });
             });
         });
+};
+
+// function to update role
+updateRole = () => {
+    const sqlEmployee = `SELECT * FROM employee`;
+
+    dbConnect.query(sqlEmployee, (err, results) => {
+        if (err) throw err;
+
+        const employee = results.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
+
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'updateEmp',
+                message: 'Select the employee you want to update: ',
+                choices: employee
+            }
+        ])
+            .then(empSelectUpdate => {
+                const updateEmployee = empSelectUpdate.updateEmp;
+                const params = [];
+                params.push(updateEmployee);
+
+                const sqlRole = `SELECT * FROM role`;
+
+                dbConnect.query(sqlRole, (err, results) => {
+                    if (err) throw err;
+
+                    const role = results.map(({ id, title }) => ({ name: title, value: id }));
+
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'updateRole',
+                            message: 'Select new role for employee',
+                            choices: role
+                        }
+                    ])
+
+                        .then(updatedRole => {
+                            const roleUpdated = updatedRole.updateRole;
+                            params.push(roleUpdated);
+
+                            let employee = params[0]
+                            params[0] = roleUpdated
+                            params[1] = updateEmployee
+
+                            const sqlQuery = `UPDATE employee SET role_id = ? WHERE id = ?`;
+
+                            dbConnect.query(sqlQuery, params, (err, result) => {
+                                if (err) throw err;
+                                console.log('Employee is now updated!');
+
+                                renderAllEmployees();
+                            });
+                        });
+                });
+            });
+    });
 };
