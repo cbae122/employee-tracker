@@ -114,31 +114,24 @@ const startDb = () => {
     });
 };
 
+renderAllDepartments = () => {
+    dbConnect.query (
+        `SELECT department.id AS id,
+                department.name AS department FROM department`,
+
+                function (err, results, fields) {
+                    if (err) {
+                        console.log(err.message);
+                        return;
+                    }
+
+                    console.table(results);
+                    startDb();
+                }
+    );
+};
+
 const renderAllEmployees = () => {
-    // console.log('Viewing All Employees');
-    // const sql = `SELECT employee.id, 
-    //                     employee.first_name, 
-    //                     employee.last_name, 
-    //                     role.title, 
-    //                     department.name AS department,
-    //                     role.salary, 
-    //                     CONCAT (manager.first_name, " ", manager.last_name) AS manager
-    //             FROM employee
-    //                     LEFT JOIN role ON employee.role_id = role.id
-    //                     LEFT JOIN department ON role.department_id = department.id
-    //                     LEFT JOIN employee manager ON employee.manager_id = manager.id`;
-                        
-    // dbConnect.promise().query(sql, (err, rows) => {
-    //     if (err) throw err;
-
-    //     console.table(rows);
-
-    //     console.log('Viewed All Employees');
-
-    //     startDb();
-
-    // });
-
     dbConnect.query (
         `SELECT employee.id, 
                 employee.first_name, 
