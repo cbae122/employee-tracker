@@ -31,16 +31,16 @@ const app = express();
 
 // Connect to database
 const dbConnect = mysql.createConnection(
-  {
-    // on mac - localhost does not connect
-    host: '127.0.0.1',
-    // MySQL username,
-    user: 'root',
-    // MySQL password
-    password: '',
-    database: 'employees'
-  },
-  console.log(`Connected to the employee database.`)
+    {
+        // on mac - localhost does not connect
+        host: '127.0.0.1',
+        // MySQL username,
+        user: 'root',
+        // MySQL password
+        password: '',
+        database: 'employees'
+    },
+    console.log(`Connected to the employee database.`)
 );
 
 dbConnect.connect((err) => {
@@ -77,83 +77,86 @@ const startDb = () => {
             'Quit'
         ]
     })
-    .then((answers) => {
-        const { choices } = answers;
+        .then((answers) => {
+            const { choices } = answers;
 
-        if (choices === 'View All Departments') {
-            renderAllDepartments();
-        }
+            if (choices === 'View All Departments') {
+                renderAllDepartments();
+            }
 
-        if (choices === 'View All Roles') {
-            renderAllRoles();
-        }
+            if (choices === 'View All Roles') {
+                renderAllRoles();
+            }
 
-        if (choices === 'View All Employees') {
-            renderAllEmployees();
-        }
+            if (choices === 'View All Employees') {
+                renderAllEmployees();
+            }
 
-        if (choices === 'Add A Department'){
-            addDepartment();
-        }
+            if (choices === 'Add A Department') {
+                addDepartment();
+            }
 
-        if (choices === 'Add A Role') {
-            addRole();
-        }
+            if (choices === 'Add A Role') {
+                addRole();
+            }
 
-        if (choices === 'Add An Employee') {
-            addEmployee();
-        }
+            if (choices === 'Add An Employee') {
+                addEmployee();
+            }
 
-        if (choices === 'Update An Employee Role') {
-            updateRole();
-        }
+            if (choices === 'Update An Employee Role') {
+                updateRole();
+            }
 
-        if (choices === 'Quit') {
-            dbConnect.end()
-        };
-    });
+            if (choices === 'Quit') {
+                dbConnect.end()
+            };
+        });
 };
 
 renderAllDepartments = () => {
-    dbConnect.query (
+    console.log('Showing all Departments.\n');
+    dbConnect.query(
         `SELECT department.id AS id,
                 department.name AS department FROM department`,
 
-                function (err, results) {
-                    if (err) {
-                        console.log(err.message);
-                        return;
-                    }
+        function (err, results) {
+            if (err) {
+                console.log(err.message);
+                return;
+            }
 
-                    console.table(results);
-                    startDb();
-                }
+            console.table(results);
+            startDb();
+        }
     );
 };
 
 renderAllRoles = () => {
-    dbConnect.query (
+    console.log('Showing all Roles.\n');
+    dbConnect.query(
         `SELECT role.id,
                 role.title,
                 role.salary,
                 department.name AS department
         FROM role
-                INNER JOIN department ON role.department_id = department.id `,
+                LEFT JOIN department ON role.department_id = department.id`,
 
-                function (err, results) {
-                    if (err) {
-                        console.log(err.message);
-                        return;
-                    }
+        function (err, results) {
+            if (err) {
+                console.log(err.message);
+                return;
+            }
 
-                    console.table(results);
-                    startDb();
-                }
+            console.table(results);
+            startDb();
+        }
     );
 };
 
 renderAllEmployees = () => {
-    dbConnect.query (
+    console.log('Showing all Employees.\n');
+    dbConnect.query(
         `SELECT employee.id, 
                 employee.first_name, 
                 employee.last_name, 
@@ -166,41 +169,108 @@ renderAllEmployees = () => {
                 LEFT JOIN department ON role.department_id = department.id
                 LEFT JOIN employee manager ON employee.manager_id = manager.id`,
 
-                function (err, results) {
-                    if (err) {
-                        console.log(err.message);
-                        return;
-                    }
+        function (err, results) {
+            if (err) {
+                console.log(err.message);
+                return;
+            }
 
-                    console.table(results);
-                    startDb();
-                }
+            console.table(results);
+            startDb();
+        }
     );
 };
 
 addDepartment = () => {
-    inquirer.prompt([{
+    inquirer.prompt({
         type: 'text',
         name: 'newDepartment',
-        message: 'Please enter the new departmant you would like to add: ',
+        message: 'Please enter the new department you would like to add: ',
         validate: newDepartment => {
             if (newDepartment) {
                 return true;
             } else {
-                console.log('Please enter a new department');
+                console.log('Please enter a new department!');
                 return false;
             }
         }
     }
-])
+    )
 
-    .then(data => {
-        const sql = `INSERT INTO department (name)
+        .then(data => {
+            const query = `INSERT INTO department (name)
                     VALUES (?)`;
-        dbConnect.query(sql, data.newDepartment, (err, results) => {
-            if (err) throw err;
-            console.log('Added ' +data.newDepartment + ' to department!');
-            renderAllDepartments();
+            dbConnect.query(query, data.newDepartment, (err, results) => {
+                if (err) throw err;
+                console.log('Added ' + data.newDepartment + ' to departments!');
+                renderAllDepartments();
+            });
         });
-    });
+};
+
+addRole = () => {
+    inquirer.prompt([
+        {
+            type: 'text',
+            name: 'newRole',
+            message: 'Please enter the new role you would like to add: ',
+            validate: newRole => {
+                if (newRole) {
+                    return true;
+                } else {
+                    console.log('Please enter a new role!');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'text',
+            name: 'newSalary',
+            message: 'Please enter the salary for this role: ',
+            validate: newSalary => {
+                if (newSalary) {
+                    return true;
+                } else {
+                    console.log('Please enter a salary!');
+                    return false;
+                }
+            }
+        }
+    ])
+
+        .then(data => {
+            const params = [data.newRole, data.newSalary];
+
+            const query = `SELECT name, id FROM department`;
+
+            dbConnect.query(query, (err, results) => {
+                if (err) throw err;
+
+                const department = results.map(({ name, id }) => ({ name: name, value: id }));
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'newDepartmentSelect',
+                        message: 'Select a department for this new role: ',
+                        choices: department
+                    }
+                ])
+
+                    .then(departmentChoice => {
+                        const department = departmentChoice.department;
+                        params.push(department);
+
+                        const query = `INSERT INTO role (title, salary, department_id) 
+                                        VALUES (?,?,?)`;
+
+                        dbConnect.query(query, params, (err, results) => {
+                            if (err) throw err;
+                            console.log('Added ' + data.newRole + ' to roles!');
+
+                            renderAllRoles();
+                        });
+                    });
+            });
+        });
 };
