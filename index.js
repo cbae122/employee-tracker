@@ -235,7 +235,7 @@ addRole = () => {
                     }
                 ])
                     .then(departmentChoice => {
-                        const dept = departmentChoice.dept;
+                        const dept = departmentChoice.newDepartmentSelect;
                         params.push(dept);
 
                         const query = `INSERT INTO role (title, salary, department_id) 
@@ -284,7 +284,7 @@ addEmployee = () => {
                     }
                 ])
                     .then(roleSelection => {
-                        const newEmpRole = roleSelection.newEmpManager;
+                        const newEmpRole = roleSelection.newEmpRole;
                         params.push(newEmpRole);
 
                         const managerSelect = `SELECT * FROM employee`;
@@ -292,7 +292,7 @@ addEmployee = () => {
                         dbConnect.query(managerSelect, (err, data) => {
                             if (err) throw err;
 
-                            const manager = data.map(({ id, first_name, last_name }) => ({ name: first_name + '' + last_name, value: id}));
+                            const manager = data.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id}));
 
                             inquirer.prompt([
                                 {
