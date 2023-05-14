@@ -61,12 +61,12 @@ beforeDb = () => {
 };
 
 const startDb = () => {
-    inquirer.prompt({
+    inquirer.prompt([
+        {
         type: 'list',
         name: 'choices',
         message: 'What would you like to do?',
         choices: [
-
             'View All Departments',
             'View All Roles',
             'View All Employees',
@@ -74,9 +74,9 @@ const startDb = () => {
             'Add A Role',
             'Add An Employee',
             'Update An Employee Role',
-            'Quit'
-        ]
-    })
+            'Quit']
+        }
+    ])
         .then((answers) => {
             const { choices } = answers;
 
@@ -116,69 +116,50 @@ const startDb = () => {
 
 renderAllDepartments = () => {
     console.log('Showing all Departments.\n');
-    dbConnect.query(
-        `SELECT department.id AS id,
-                department.name AS department FROM department`,
-
-        function (err, results) {
-            if (err) {
-                console.log(err.message);
-                return;
-            }
-
-            console.table(results);
-            startDb();
-        }
-    );
+    const department = `SELECT department.id AS id, department.name AS department FROM department`;
+  
+    dbConnect.query(department, (err, rows) => {
+      if (err) throw err;
+      console.table(rows);
+      startDb();
+    });
 };
 
 renderAllRoles = () => {
     console.log('Showing all Roles.\n');
-    dbConnect.query(
-        `SELECT role.id,
-                role.title,
-                role.salary,
-                department.name AS department
-        FROM role
-                LEFT JOIN department ON role.department_id = department.id`,
 
-        function (err, results) {
-            if (err) {
-                console.log(err.message);
-                return;
-            }
+    const roles = `SELECT role.id,
+                    role.title,
+                    department.name AS department
+                FROM role
+                    INNER JOIN department ON role.department_id = department.id`;
 
-            console.table(results);
-            startDb();
-        }
-    );
+    dbConnect.query(roles, (err, rows) => {
+        if (err) throw err;
+        console.table(rows);
+        startDb();
+    });
 };
 
 renderAllEmployees = () => {
     console.log('Showing all Employees.\n');
-    dbConnect.query(
-        `SELECT employee.id, 
-                employee.first_name, 
-                employee.last_name, 
-                role.title, 
-                department.name AS department,
-                role.salary, 
-                CONCAT (manager.first_name, " ", manager.last_name) AS manager
-        FROM employee
-                LEFT JOIN role ON employee.role_id = role.id
-                LEFT JOIN department ON role.department_id = department.id
-                LEFT JOIN employee manager ON employee.manager_id = manager.id`,
-
-        function (err, results) {
-            if (err) {
-                console.log(err.message);
-                return;
-            }
-
-            console.table(results);
-            startDb();
-        }
-    );
+    const employees = `SELECT employee.id, 
+                        employee.first_name, 
+                        employee.last_name, 
+                        role.title, 
+                        department.name AS department,
+                        role.salary, 
+                        CONCAT (manager.first_name, " ", manager.last_name) AS manager
+                 FROM employee
+                        LEFT JOIN role ON employee.role_id = role.id
+                        LEFT JOIN department ON role.department_id = department.id
+                        LEFT JOIN employee manager ON employee.manager_id = manager.id`;
+  
+    dbConnect.query(employees, (err, rows) => {
+      if (err) throw err;
+      console.table(rows);
+      startDb();
+    });
 };
 
 addDepartment = () => {
@@ -196,7 +177,6 @@ addDepartment = () => {
         }
     }
     )
-
         .then(data => {
             const query = `INSERT INTO department (name)
                     VALUES (?)`;
@@ -224,11 +204,11 @@ addRole = () => {
             }
         },
         {
-            type: 'text',
+            type: 'number',
             name: 'newSalary',
             message: 'Please enter the salary for this role: ',
-            validate: newSalary => {
-                if (newSalary) {
+            validate: addSalary => {
+                if (addSalary) {
                     return true;
                 } else {
                     console.log('Please enter a salary!');
@@ -237,36 +217,34 @@ addRole = () => {
             }
         }
     ])
+        .then(answer => {
+            const params = [answer.newRole, answer.newSalary];
 
-        .then(data => {
-            const params = [data.newRole, data.newSalary];
+            const sqlId = `SELECT name, id FROM department`;
 
-            const query = `SELECT name, id FROM department`;
-
-            dbConnect.query(query, (err, results) => {
+            dbConnect.query(sqlId, (err, data) => {
                 if (err) throw err;
 
-                const department = results.map(({ name, id }) => ({ name: name, value: id }));
+                const dept = data.map(({ name, id }) => ({ name: name, value: id }));
 
                 inquirer.prompt([
                     {
                         type: 'list',
                         name: 'newDepartmentSelect',
                         message: 'Select a department for this new role: ',
-                        choices: department
+                        choices: dept
                     }
                 ])
-
                     .then(departmentChoice => {
-                        const department = departmentChoice.department;
-                        params.push(department);
+                        const dept = departmentChoice.dept;
+                        params.push(dept);
 
                         const query = `INSERT INTO role (title, salary, department_id) 
-                                        VALUES (?,?,?)`;
+                                        VALUES (?, ?, ?)`;
 
-                        dbConnect.query(query, params, (err, results) => {
+                        dbConnect.query(query, params, (err, result) => {
                             if (err) throw err;
-                            console.log('Added ' + data.newRole + ' to roles!');
+                            console.log('Added ' + answer.newRole + ' to roles!');
 
                             renderAllRoles();
                         });
