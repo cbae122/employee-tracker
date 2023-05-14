@@ -17,17 +17,12 @@
 // THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 
 const express = require('express');
-// Import and require mysql2
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
-
-// // Express middleware
-// app.use(express.urlencoded({ extended: false }));
-// app.use(express.json());
 
 // Connect to database
 const dbConnect = mysql.createConnection(
@@ -167,19 +162,13 @@ renderAllEmployees = () => {
 
 // function to add department
 addDepartment = () => {
-    inquirer.prompt({
+    inquirer.prompt([
+        {
         type: 'text',
         name: 'newDepartment',
         message: 'Please enter the new department you would like to add: ',
-        // validate: newDepartment => {
-        //     if (newDepartment) {
-        //         return true;
-        //     } else {
-        //         console.log('Please enter a new department!');
-        //         return false;
-        //     }
-        // }
-    })
+        }
+    ])
         .then(data => {
             const query = `INSERT INTO department (name)
                     VALUES (?)`;
@@ -199,27 +188,11 @@ addRole = () => {
             type: 'text',
             name: 'newRole',
             message: 'Please enter the new role you would like to add: ',
-            // validate: newRole => {
-            //     if (newRole) {
-            //         return true;
-            //     } else {
-            //         console.log('Please enter a new role!');
-            //         return false;
-            //     }
-            // }
         },
         {
             type: 'number',
             name: 'newSalary',
             message: 'Please enter the salary for this role: ',
-            // validate: addSalary => {
-            //     if (addSalary) {
-            //         return true;
-            //     } else {
-            //         console.log('Please enter a salary!');
-            //         return false;
-            //     }
-            // }
         }
     ])
         .then(answer => {
