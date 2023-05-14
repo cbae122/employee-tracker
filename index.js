@@ -167,16 +167,15 @@ addDepartment = () => {
         type: 'text',
         name: 'newDepartment',
         message: 'Please enter the new department you would like to add: ',
-        validate: newDepartment => {
-            if (newDepartment) {
-                return true;
-            } else {
-                console.log('Please enter a new department!');
-                return false;
-            }
-        }
-    }
-    )
+        // validate: newDepartment => {
+        //     if (newDepartment) {
+        //         return true;
+        //     } else {
+        //         console.log('Please enter a new department!');
+        //         return false;
+        //     }
+        // }
+    })
         .then(data => {
             const query = `INSERT INTO department (name)
                     VALUES (?)`;
@@ -194,27 +193,27 @@ addRole = () => {
             type: 'text',
             name: 'newRole',
             message: 'Please enter the new role you would like to add: ',
-            validate: newRole => {
-                if (newRole) {
-                    return true;
-                } else {
-                    console.log('Please enter a new role!');
-                    return false;
-                }
-            }
+            // validate: newRole => {
+            //     if (newRole) {
+            //         return true;
+            //     } else {
+            //         console.log('Please enter a new role!');
+            //         return false;
+            //     }
+            // }
         },
         {
             type: 'number',
             name: 'newSalary',
             message: 'Please enter the salary for this role: ',
-            validate: addSalary => {
-                if (addSalary) {
-                    return true;
-                } else {
-                    console.log('Please enter a salary!');
-                    return false;
-                }
-            }
+            // validate: addSalary => {
+            //     if (addSalary) {
+            //         return true;
+            //     } else {
+            //         console.log('Please enter a salary!');
+            //         return false;
+            //     }
+            // }
         }
     ])
         .then(answer => {
@@ -247,6 +246,76 @@ addRole = () => {
                             console.log('Added ' + answer.newRole + ' to roles!');
 
                             renderAllRoles();
+                        });
+                    });
+            });
+        });
+};
+
+addEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: 'What is the new employees first name?'
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: 'What is the new employees last name?'
+        }
+    ])
+        .then(answer => {
+            const params = [answer.firstName, answer.lastName]
+
+            const sqlRole = `SELECT role.id, role.title FROM role`;
+
+            dbConnect.query(sqlRole, (err, data) => {
+                if (err) throw err;
+
+                const role = data.map(({ id, title }) => ({ name: title, value: id }));
+
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'newEmpRole',
+                        message: 'What is the new employees role?',
+                        choices: role
+                    }
+                ])
+                    .then(roleSelection => {
+                        const newEmpRole = roleSelection.newEmpManager;
+                        params.push(newEmpRole);
+
+                        const managerSelect = `SELECT * FROM employee`;
+
+                        dbConnect.query(managerSelect, (err, data) => {
+                            if (err) throw err;
+
+                            const manager = data.map(({ id, first_name, last_name }) => ({ name: first_name + '' + last_name, value: id}));
+
+                            inquirer.prompt([
+                                {
+                                    type: 'list',
+                                    name: 'newEmpManager',
+                                    message: 'Who is the new employees manager?',
+                                    choices: manager
+                                }
+                            ])
+                                .then(managerSelection => {
+                                    const newEmpManager = managerSelection.newEmpManager;
+                                    params.push(newEmpManager);
+
+                                    const query = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                                                    VALUES (?, ?, ?, ?)`;
+
+                                    dbConnect.query(query, params, (err, result) => {
+                                        if (err) throw err;
+                                        console.log('Employee has been added!')
+
+                                        renderAllEmployees();
+                                    });
+                                });
                         });
                     });
             });
